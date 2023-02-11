@@ -1,0 +1,21 @@
+<form method="POST" action="{{ url_for('create_team') }}">
+    <div class="container">
+        <div class="row">
+            <div class="col">
+                <label for="teamName" class="col-sm-2 col-form-label">Nome</label>
+                <div class="col-sm-10">
+                    <input type="text" class="form-control-plaintext" id="staticName" placeholder="Time a">
+                </div>
+            </div>
+            <div class="col">
+                <label for="teamTipo" class="col-sm-2 col-form-label">Tipo</label>
+                <div class="col-sm-10">
+                    <select class="form-select" aria-label="Default select example">
+                        <option value="1">equipe</option>
+                        <option value="2">vingador</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
