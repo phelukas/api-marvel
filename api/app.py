@@ -136,13 +136,6 @@ def create_team():
     if request.method == 'POST':
         teamname = request.form['teamName']
         teamtype = request.form['teamTipo']
-        print(len(teamname))
-        print(len(teamtype))
-
-        # if not teamname:
-        #     print("to aqui no not")
-        #     return {"valid":False}
-
 
         data = {
             "time_nome": teamname,
@@ -153,16 +146,40 @@ def create_team():
             name=teamname,
             tipo_time=teamtype
         )
-        db.session.add(team)
-        add = db.session.commit()
-        print("@"*50)
-        print(data)
-        print(add)
-        print("@"*50)
 
+        db.session.add(team)
+        db.session.commit()
         return data
 
     return render_template('team_create.html')
+
+@app.route('/teams/edit/<int:team_id>/', methods=('GET', 'POST'))
+def edit_team(team_id):
+    team = Team.query.get_or_404(team_id)
+
+    if request.method == 'POST':
+        teamname = request.form['teamName']
+        teamtype = request.form['teamTipo']
+
+        if teamtype == 1:
+            teamtype = "Equipe"
+        else:
+            teamtype = "Vingadores"
+
+        team.name = teamname
+        team.tipo_time = teamtype
+
+        db.session.add(team)
+        db.session.commit()
+
+        data = {
+            "time_nome": teamname,
+            "time_tipo": teamtype
+        }
+
+        return data
+
+    return render_template('team_edit.html', team=team)
 
 
 @app.route('/')
