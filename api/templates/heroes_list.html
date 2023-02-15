@@ -15,8 +15,9 @@
                     <p>{{ hero.descricao }}</p>
                     <p><a class="btn btn-secondary heroinfo" data-name="{{ hero.nome }}" href="#">View details</a></p>
                     <!-- Button trigger modal -->
-                    <button type="button" class="btn btn-primary addheroteam" data-bs-toggle="modal"
-                        data-bs-target="#exampleModal" data-bs-whatever="@mdo">Adcionar ao time</button>
+                    <button type="button" class="btn btn-primary namehero" data-name="{{ hero.nome }}" data-bs-toggle="modal"
+                        data-bs-target="#exampleModal" data-bs-whatever="@mdo">Adcionar ao
+                        time</button>
                 </div>
                 {% endfor %}
             </div>
@@ -44,34 +45,33 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="exampleModalLabel">Criar um novo time</h5>
+                <h5 class="modal-title" id="exampleModalLabel">Adicionar ao time</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body">
+            <div class="modal-body-add-hero-team">
                 <form method="POST">
                     <div class="mb-3">
-                        <label for="team-name" class="col-form-label">Nome:</label>
-                        <input type="text" class="form-control" id="team-name" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="team-tipo" class="col-form-label">Tipo:</label>
-                        <select class="form-select form-select-lg mb-3" id="team-tipo"
-                            aria-label=".form-select-lg example">
-                            <option value="1">Equipe</option>
-                            <option value="2">Vingadores</option>
-                        </select>
+                        {% for field in form %}
+                        <label for="team-name" class="col-form-label">Equipe:</label>
+                        {{ field }}
+                        {% endfor %}
                     </div>
                 </form>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary teamadd">Salvar</button>
+                <button type="submit" class="btn btn-primary addheroteam">Salvar</button>
             </div>
         </div>
     </div>
 </div>
 
 <script type="text/javascript">
+
+    $(document).ready(function () {
+        $('#time').addClass('form-select form-select-lg mb-3')
+    });
+
     $(document).ready(function () {
         $('.heroinfo').click(function () {
             var heroname = $(this).data('name');
@@ -93,26 +93,25 @@
         var button = event.relatedTarget
         var recipient = button.getAttribute('data-bs-whatever')
         $(document).ready(function () {
-            $('.teamadd').click(function () {
-                var teamName = exampleModal.querySelector('#team-name').value
-                var teamTipo = exampleModal.querySelector('#team-tipo').value
-                if (teamName.length == 0) {
-                    alert("Nome não pode ser em branco")
-                } else {
-                    $.ajax({
-                        url: '/teams/add/',
-                        type: 'POST',
-                        data: {
-                            teamName: teamName,
-                            teamTipo: teamTipo
-                        },
-                        success: function (data) {
-                            setTimeout(function () {
-                                location.reload()
-                            }, 1000)
-                        }
-                    });
-                };
+            $('.namehero').click(function() {
+                const nomeHero = $(this).data('name')
+                nomeHero_ = nomeHero
+            });
+            $('.addheroteam').click(function () {
+                var selecdSubject = $("#time option:selected").val()
+
+                $.ajax({
+                    url: '/heroes/',
+                    type: 'POST',
+                    data: {
+                        teamId: selecdSubject,
+                        heroName: nomeHero_
+                    },
+                    success: function (data) {
+                        console.log("aqui")
+                    }
+                });
+
             });
         });
     });

@@ -4,6 +4,10 @@ import base64
 from flask import Flask, render_template, request, url_for, redirect, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.sql import func
+from wtforms import Form, StringField, TextAreaField, BooleanField, validators
+from wtforms_sqlalchemy.fields import QuerySelectMultipleField, QuerySelectField
+from urllib.request import urlopen 
+
 
 
 basedir = os.path.abspath(os.path.dirname(__file__))
@@ -53,10 +57,20 @@ class Team(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     tipo_time = db.Column(db.String(100), nullable=False)
-    candidates = db.relationship('Candidates', secondary=teams, lazy='subquery', backref=db.backref('teams', lazy=True))
+    candidates = db.relationship(
+        'Candidates', secondary=teams, lazy='subquery', backref=db.backref('teams', lazy=True))
 
     def __repr__(self):
         return f"<Team {self.name}>"
+
+
+class FormAddHeroTeam(Form):
+
+    def get_team():
+        return Team.query
+        
+    time = QuerySelectField("Nome do Time", validators=[validators.DataRequired()], get_label='name', query_factory=get_team)
+
 
 def make_url(category, name=None):
     ts = "1675897305"
@@ -70,9 +84,8 @@ def make_url(category, name=None):
 
 
 def render_picture(data):
-    render_pic = base64.b64encode(data).decode('ascii')
+    render_pic = base64.b64encode(urlopen(data).read())
     return render_pic
-
 
 @app.route('/list/')
 def list():
@@ -81,15 +94,15 @@ def list():
     return response.json()
 
 
-@app.route('/heroes/')
+@app.route('/heroes/', methods=('GET', 'POST'))
 def list_heroes():
     url = make_url(category="characters")
-    request = requests.request("GET", url)
+    request_ = requests.request("GET", url)
 
-    if request.status_code != 200:
-        return {"erro": str(request.json()['message'])}
+    if request_.status_code != 200:
+        return {"erro": str(request_.json()['message'])}
 
-    results = request.json()['data']['results']
+    results = request_.json()['data']['results']
     response = []
 
     for result in results:
@@ -100,8 +113,45 @@ def list_heroes():
         data['extensao_foto'] = result['thumbnail']['extension']
         response.append(data)
 
-    # return data
-    return render_template('heroes_list.html', heroes=response)
+    form = FormAddHeroTeam()
+
+    if request.method == 'POST':
+        name_hero = request.form['heroName']
+        team_id = request.form['teamId']
+        team = Team.query.get_or_404(team_id)
+
+        url = make_url(category="characters", name=str(name_hero))
+        results = requests.request("GET", url).json()['data']['results']
+
+        for result in results:
+            data = {}
+            data['nome'] = result['name']
+            data['descricao'] = result['description']
+            data['foto'] = f"{result['thumbnail']['path']}.{result['thumbnail']['extension']}"
+            data['extensao_foto'] = result['thumbnail']['extension']
+
+        candidato = Candidates(
+            name=data['nome'],
+            description=data['descricao'],
+            image=render_picture(data['foto'])
+        )
+
+        db.session.add(candidato)
+        db.session.commit()
+        candidatos = []
+        candidatos.append(candidato)
+        print("aqui")
+        print(candidatos)
+        print(type(candidatos))
+        print("aqui")
+
+        team.candidates += candidatos
+
+        db.session.add(team)
+        db.session.commit()
+
+
+    return render_template('heroes_list.html', heroes=response, form=form)
 
 
 @app.route('/hero/', methods=["POST"])
@@ -123,6 +173,15 @@ def hero():
 
     # hero = Candidates.query.get_or_404(hero_id)
     return jsonify({'htmlresponse': render_template('hero.html', employeelist=response)})
+
+
+# @app.route('/team/<int:team_id>/hero/', methods=('GET', 'POST'))
+# def add_hero_team(team_id):
+#     team = Team.query.get_or_404(team_id)
+#     form = FormAddHeroTeam()
+#     return render_template('')
+
+    # if request.method == 'POST':
 
 
 @app.route('/teams/')
@@ -152,6 +211,7 @@ def create_team():
         return data
 
     return render_template('team_create.html')
+
 
 @app.route('/teams/edit/<int:team_id>/', methods=('GET', 'POST'))
 def edit_team(team_id):
