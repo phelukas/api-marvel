@@ -1,1 +1,1 @@
-from server.database.models import herois
+from server.database.models import herois, usuarios, desafios, palpites

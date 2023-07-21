@@ -1,0 +1,20 @@
+# 1 =  ver como funicona o pytest para testar filas
+# 2 = pytest do sheduler: testar a chamada da função
+
+# TABELA - HEROIS:
+# -> id
+# -> nome
+# -> descrição 
+
+# TABELA - RESPOSTAS:
+# -> id
+# -> id_heroi
+# -> id_user
+# -> data
+# -> acertou
+
+# TABELA - DESAFIO_DIA:
+# -> id
+# -> id_heroi
+# -> data_desafio
+# -> resposata_certa

@@ -1,1 +1,1 @@
-from .candidatos import Candidates
+from .heroi import Heroi

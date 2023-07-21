@@ -32,3 +32,4 @@ try:
 
 except pyodbc.Error as e:
     print(f"Erro na conexão: {str(e)}")
+SQL_SERVER_HOST = "172.17.0.3"

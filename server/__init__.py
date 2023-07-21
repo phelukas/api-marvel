@@ -1,6 +1,8 @@
 from flask import Flask
 from server import database, api
 from urllib.parse import quote_plus
+from flask_alembic import Alembic
+import os
 
 
 def get_sql_server_uri(server, database, username, password):
@@ -20,10 +22,10 @@ class Servidor(Flask):
     def __init__(self):
         super().__init__(__name__)
         self.config["SQLALCHEMY_DATABASE_URI"] = get_sql_server_uri(
-            server="172.17.0.2",
-            database="dbMarvel",
-            username="sa",
-            password="Nohaxe100",
+            server=os.environ["SQL_SERVER_HOST"],
+            database=os.environ["SQL_SERVER_DATABASE"],
+            username=os.environ["SQL_SERVER_USER"],
+            password=os.environ["SQL_SERVER_PASSWORD"],
         )
 
     def init_api(self):
@@ -31,3 +33,9 @@ class Servidor(Flask):
 
     def init_database(self):
         database.init_app(self)
+
+    def migrate(self):
+        self.alembic = Alembic(self)
+        with self.app_context():
+            self.alembic.revision("check")
+            self.alembic.upgrade()
